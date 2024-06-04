@@ -37,7 +37,7 @@ export const connectToDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URL, {
       
-      useUnifiedTopology: true,
+      // useUnifiedTopology: true,
     });
 
     isConnected = true;
