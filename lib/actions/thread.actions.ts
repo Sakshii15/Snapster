@@ -200,18 +200,19 @@ export async function fetchThreadById(threadId: string) {
   }
 }
 
-export async function addCommentToThread(
-  threadId: string,
-  commentText: string,
-  userId: string,
-  path: string
-) {
-  connectToDB();
 
+
+export async function addCommentToThread(threadId: string, commentText: string, userId: string, path: string) {
   try {
+    await connectToDB();
+
+    // Validate input parameters
+    if (!threadId || !commentText || !userId) {
+      throw new Error("Invalid input parameters");
+    }
+
     // Find the original thread by its ID
     const originalThread = await Thread.findById(threadId);
-
     if (!originalThread) {
       throw new Error("Thread not found");
     }
@@ -221,6 +222,7 @@ export async function addCommentToThread(
       text: commentText,
       author: userId,
       parentId: threadId, // Set the parentId to the original thread's ID
+      community: originalThread.community, // Inherit the community from the parent thread
     });
 
     // Save the comment thread to the database
@@ -233,8 +235,11 @@ export async function addCommentToThread(
     await originalThread.save();
 
     revalidatePath(path);
+
+    return savedCommentThread; // Return the saved comment thread for further use if needed
   } catch (err) {
-    console.error("Error while adding comment:", err);
-    throw new Error("Unable to add comment");
+    console.log("Error while adding comment:", err);
+    throw new Error(`Unable to add comment:`);
   }
 }
+ 
